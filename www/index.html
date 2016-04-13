@@ -8,7 +8,7 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="../../favicon.ico">
+    
 
     <title>Gas Gas Gas</title>
 
@@ -53,13 +53,17 @@
       <div class="jumbotron">
             <div class="row">
               <div class="col-md-4">
-                  <h4>Per Gallon(US)</h4>
-                  <input type="text" class="form-control" value="2.56" id="ppg">
+                  <h4>Gallon(US)<small>real</small></h4>
+                  <input type="text" class="form-control" value="2.56" id="ppgr">
+                  <h4>Gallon(US)<small>calculated</small></h4>
+                  <input type="text" class="form-control" value="2.56" disabled id="ppgc">                  
                 </div>
               <div class="col-md-4"><button class="btn btn-primary">=</button></div>
               <div class="col-md-4">
-                  <h4>Por Litro (MX)</h4>
-                  <input type="text" class="form-control" value="13.12" id="ppl">                  
+                  <h4>Litro (MX)<small>real</small></h4>
+                  <input type="text" class="form-control" value="13.12" id="pplr">
+                  <h4>Litro (MX)<small>calculada</small></h4>
+                  <input type="text" class="form-control" value="13.12" disabled id="pplc">                       
                 </div>
             </div>              
       </div>
@@ -67,9 +71,7 @@
       <div class="row marketing">
         <div class="col-lg-6">
           <h4>Cantidad en Pesos</h4>
-          <input type="text" class="form-control" id="cep">
-
-   
+          <input type="text" class="form-control" value="200" id="cep">
 
           <h4>Catidad en litros</h4>
           <input  type="text" class="form-control" id="cel">
@@ -77,7 +79,7 @@
 
         <div class="col-lg-6">
         <h4>Quantity in Dlls</h4>
-          <input type="text" class="form-control" id="qid">
+          <input type="text" class="form-control" value="20" id="qid">
 
         <h4>Quantity in Gallons</h4>
           <input type="text" class="form-control" id="qig">
@@ -97,13 +99,115 @@
 </html>
 
 <script>
+    function converter(exchange,xg,xl){
+        value_in_litter_us = xg / 3.78
+        value_in_mx_of_us_litter =value_in_litter_us * exchange        
+        value_in_gallon_mx = xl * 3.78
+        value_in_us_of_mx_litter = value_in_gallon_mx / exchange        
+        return {value_in_mx_of_us_litter:value_in_mx_of_us_litter,value_in_us_of_mx_litter:value_in_us_of_mx_litter}
+        
+    }
+    
+    function ridecalculator(){
+        var pplc = $("#pplc").val();
+        var ppgc = $("#ppgc").val();                        
+        var exchange = $("#ex").html();        
+        var ppgr = $("#ppgr").val();
+        var pplr = $("#pplr").val();
+        var cep = $("#cep").val();
+        var cel = $("#cel").val();
+        var qid = $("#qid").val();
+        var qig = $("#qig").val();          
+        
+        
+        var litrosfrommx =  cel * pplr        
+        var cantidadenmx =  cep / pplr
+        
+        
+        var galonesfrommx =  cantidadenmx / 3.78        
+        var dllsfrommx =  galonesfrommx * ppgr
+        
+                
+
+        var obj =  {
+            cel:litrosfrommx,
+            cep:cantidadenmx,
+            galonesfrommx:galonesfrommx,
+            dllsfrommx:dllsfrommx
+               }
+        
+        return obj
+        
+        
+    }
+    
     $(function(){
   
+        var exchange = $("#ex").html();        
+        var ppgr = $("#ppgr").val();
+        var pplr = $("#pplr").val();
+        var cep = $("#cep").val();
+        var cel = $("#cel").val();
+        var qid = $("#qid").val();
+        var qig = $("#qig").val();
+        
+        var res = converter(exchange,ppgr,pplr)
+        $("#pplc").val(res.value_in_mx_of_us_litter);
+        
+        var res = converter(exchange,ppgr,pplr)
+        $("#ppgc").val(res.value_in_us_of_mx_litter);          
+        
     
     $("input").keyup(function(){
         var id = $(this).attr('id');
-        console.log(id)
+        var exchange = $("#ex").html();        
+        var ppgr = $("#ppgr").val();
+        var pplr = $("#pplr").val();
+        var cep = $("#cep").val();
+        var cel = $("#cel").val();
+        var qid = $("#qid").val();
+        var qig = $("#qig").val();
+
+        switch(id){
+            case 'ppgr': //real pprice in gallons
+                var res = converter(exchange,ppgr,pplr)
+                $("#pplc").val(res.value_in_mx_of_us_litter);
+                
+            break;
+                        
+            case 'pplr': // real price in liters
+                var res = converter(exchange,ppgr,pplr)
+                $("#ppgc").val(res.value_in_us_of_mx_litter);                                
+            break;   
+            
+            
+            case 'cep': // cantiddad en pesos
+                var vals = ridecalculator();
+                $("#cel").val(vals.cep)
+                $("#qig").val(vals.galonesfrommx)
+                $("#qid").val(vals.dllsfrommx)
+                
+                
+            break;  
+                
+            case 'cel': //cantidad en litros
+                var vals = ridecalculator();
+                $("#cep").val(vals.cel)
+            break;  
+                 
+            case 'qid': // cantidad en dolares
+            break;   
+                
+            case 'qig': // cantidad en galones
+            break;                   
+        }
+        
+        
+        
     });
+        
+        
+        
     $("#ext").click(function(){
         var ext = prompt("Tipo de Cambio Hoy");
         if (ext != undefined && ext > 1 ){
@@ -112,6 +216,23 @@
         
 
     })
+    
+    
+    var fbURL="http://api.fixer.io/latest?base=USD";
+
+    $.ajax({
+        url: fbURL,
+        data: "",
+        type: 'GET',
+        success: function (resp) {
+            $("#ex").html(resp.rates.MXN);
+        },
+        error: function(e) {
+            alert('Error: '+e);
+        }  
+    });
+    
+    
   
     });
 </script>
